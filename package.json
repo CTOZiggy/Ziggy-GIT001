@@ -1,0 +1,20 @@
+{
+  "name": "frontend-design-tokens",
+  "version": "1.0.0",
+  "description": "Design token management plugin using Style Dictionary",
+  "type": "module",
+  "scripts": {
+    "build": "style-dictionary build --config style-dictionary.config.js",
+    "build:watch": "style-dictionary build --config style-dictionary.config.js --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:42867/git/CTOZiggy/Ziggy-GIT001"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "style-dictionary": "^5.4.0"
+  }
+}

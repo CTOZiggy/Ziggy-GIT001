@@ -1,0 +1,32 @@
+{
+  "color": {
+    "semantic": {
+      "brand": {
+        "primary":   { "$value": "{color.base.blue.600}", "$type": "color" },
+        "secondary": { "$value": "{color.base.blue.800}", "$type": "color" },
+        "accent":    { "$value": "{color.base.blue.400}", "$type": "color" }
+      },
+      "text": {
+        "primary":   { "$value": "{color.base.gray.900}", "$type": "color" },
+        "secondary": { "$value": "{color.base.gray.600}", "$type": "color" },
+        "disabled":  { "$value": "{color.base.gray.400}", "$type": "color" },
+        "inverse":   { "$value": "#ffffff",               "$type": "color" }
+      },
+      "background": {
+        "default":   { "$value": "#ffffff",               "$type": "color" },
+        "subtle":    { "$value": "{color.base.gray.50}",  "$type": "color" },
+        "muted":     { "$value": "{color.base.gray.100}", "$type": "color" }
+      },
+      "border": {
+        "default":   { "$value": "{color.base.gray.200}", "$type": "color" },
+        "strong":    { "$value": "{color.base.gray.400}", "$type": "color" }
+      },
+      "feedback": {
+        "success":   { "$value": "{color.base.green.500}", "$type": "color" },
+        "error":     { "$value": "{color.base.red.500}",   "$type": "color" },
+        "warning":   { "$value": "{color.base.yellow.500}", "$type": "color" },
+        "info":      { "$value": "{color.base.blue.500}",  "$type": "color" }
+      }
+    }
+  }
+}

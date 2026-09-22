@@ -5,7 +5,22 @@
   "type": "module",
   "scripts": {
     "build": "style-dictionary build --config style-dictionary.config.js",
-    "build:watch": "style-dictionary build --config style-dictionary.config.js --watch"
+    "build:watch": "style-dictionary build --config style-dictionary.config.js --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "review": "npm run format:check && npm run lint",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   },
   "repository": {
     "type": "git",
@@ -15,6 +30,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.4",
+    "prettier": "^3.8.3",
     "style-dictionary": "^5.4.0"
   }
 }

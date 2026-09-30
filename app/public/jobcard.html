@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Callout Job Card</title>
+    <link rel="stylesheet" href="/app.css" />
+  </head>
+  <body>
+    <main>
+      <h1 id="title">Job card</h1>
+      <div class="muted" id="sub"></div>
+      <div class="card">
+        <ul class="steps" id="steps"></ul>
+      </div>
+      <div class="card">
+        <label for="tech">Your name</label>
+        <input id="tech" autocomplete="name" />
+        <div style="height: 12px"></div>
+        <button class="primary" id="go" disabled>Loading…</button>
+        <div class="msg" id="msg" role="status"></div>
+      </div>
+      <div class="card muted" id="durations"></div>
+    </main>
+    <script src="/jobcard.js"></script>
+  </body>
+</html>

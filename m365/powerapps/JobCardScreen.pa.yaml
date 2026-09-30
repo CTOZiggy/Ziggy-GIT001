@@ -1,0 +1,163 @@
+# Power Apps canvas app: the technician's job card screen.
+#
+# Setup (Power Apps Studio, blank canvas app, phone layout):
+#   1. Data > Add data > SharePoint > your site > "Callout Job Cards".
+#   2. Tree view > right-click > "Paste code", with this file's contents in the clipboard.
+#      If Studio rejects the paste, insert each control below with the same name and
+#      copy its properties across by hand — every formula is in this file.
+#   3. Delete the default Screen1 and save/publish.
+#
+# The app is opened from Halo with ?ticketid=<Halo ticket id> (and optionally
+# &store=...&summary=...). Technician name/email come from the M365 sign-in.
+- scrJobCard:
+    Control: Screen
+    Properties:
+      Fill: =RGBA(245, 246, 248, 1)
+      OnVisible: |-
+        =Set(varTicket, Value(Param("ticketid")));
+        Set(varCard, LookUp('Callout Job Cards', TicketID = varTicket));
+        Set(varPending, Blank());
+        Set(varBusy, false)
+    Children:
+      - lblTitle:
+          Control: Label
+          Properties:
+            X: =16
+            Y: =16
+            Width: =Parent.Width - 32
+            Height: =64
+            Size: =20
+            FontWeight: =FontWeight.Bold
+            Text: |-
+              =If(
+                  IsBlank(varTicket),
+                  "No ticket — open this app from the Halo ticket button",
+                  "Ticket #" & varTicket & " — " & Coalesce(varCard.Title, Param("summary"), "Callout")
+              )
+      - txtStore:
+          Control: Classic/TextInput
+          Properties:
+            X: =16
+            Y: =88
+            Width: =Parent.Width - 32
+            Height: =48
+            HintText: ="Store name"
+            Default: =Coalesce(varCard.Store, Param("store"))
+            DisplayMode: =If(IsBlank(varCard.LeftOffice), DisplayMode.Edit, DisplayMode.View)
+      - lblSteps:
+          Control: Label
+          Properties:
+            X: =16
+            Y: =148
+            Width: =Parent.Width - 32
+            Height: =200
+            Size: =15
+            VerticalAlign: =VerticalAlign.Top
+            Text: |-
+              =With(
+                  {f: "ddd dd mmm, hh:mm"},
+                  "1. Left office:      " & If(IsBlank(varCard.LeftOffice), "—", Text(varCard.LeftOffice, f)) & Char(10) &
+                  "2. Arrived on site: " & If(IsBlank(varCard.ArrivedOnSite), "—", Text(varCard.ArrivedOnSite, f)) & Char(10) &
+                  "3. Left site:          " & If(IsBlank(varCard.LeftSite), "—", Text(varCard.LeftSite, f)) & Char(10) &
+                  "4. Back in office:  " & If(IsBlank(varCard.BackInOffice), "—", Text(varCard.BackInOffice, f)) & Char(10) & Char(10) &
+                  "Status: " & Coalesce(varCard.Status.Value, "Not started") &
+                  If(IsBlank(varCard.Technician), "", "  ·  " & varCard.Technician)
+              )
+      - btnStamp:
+          Control: Classic/Button
+          Properties:
+            X: =16
+            Y: =360
+            Width: =Parent.Width - 32
+            Height: =88
+            Size: =18
+            FontWeight: =FontWeight.Semibold
+            BorderRadius: =12
+            DisplayMode: |-
+              =If(
+                  IsBlank(varTicket) || varBusy || varCard.Status.Value = "Closed"
+                    || (IsBlank(varCard.LeftOffice) && IsBlank(txtStore.Text)),
+                  DisplayMode.Disabled,
+                  DisplayMode.Edit
+              )
+            Text: |-
+              =If(!IsBlank(varPending), "Retry save (time kept)",
+                  Switch(
+                      varCard.Status.Value,
+                      "Travelling to site", "Check in — I'm on site",
+                      "On site", "Sign out — work done, leaving site",
+                      "Travelling back", "Close job card — back in office",
+                      "Closed", "Job card complete ✔",
+                      "I've left the office"
+                  )
+              )
+            OnSelect: |-
+              =Set(varBusy, true);
+              // Capture the time and GPS of the first tap; a retry after a failed save reuses them.
+              If(
+                  IsBlank(varPending),
+                  Set(varPending, {
+                      At: Now(),
+                      Loc: If(
+                          IsBlank(Location.Latitude), "",
+                          Text(Location.Latitude, "0.000000", "en-US") & "," & Text(Location.Longitude, "0.000000", "en-US")
+                      )
+                  })
+              );
+              Set(
+                  varSaved,
+                  Switch(
+                      varCard.Status.Value,
+                      "Travelling to site",
+                      Patch('Callout Job Cards', varCard, {
+                          ArrivedOnSite: varPending.At, ArrivedOnSiteLocation: varPending.Loc,
+                          TravelOutMins: DateDiff(varCard.LeftOffice, varPending.At, TimeUnit.Minutes),
+                          Status: {Value: "On site"}, LastStep: "check_in"
+                      }),
+                      "On site",
+                      Patch('Callout Job Cards', varCard, {
+                          LeftSite: varPending.At, LeftSiteLocation: varPending.Loc,
+                          OnSiteMins: DateDiff(varCard.ArrivedOnSite, varPending.At, TimeUnit.Minutes),
+                          Status: {Value: "Travelling back"}, LastStep: "sign_out"
+                      }),
+                      "Travelling back",
+                      Patch('Callout Job Cards', varCard, {
+                          BackInOffice: varPending.At, BackInOfficeLocation: varPending.Loc,
+                          TravelBackMins: DateDiff(varCard.LeftSite, varPending.At, TimeUnit.Minutes),
+                          TotalMins: DateDiff(varCard.LeftOffice, varPending.At, TimeUnit.Minutes),
+                          Status: {Value: "Closed"}, LastStep: "closed_off"
+                      }),
+                      // Not started: create the card, or update the one Halo pre-created.
+                      Patch('Callout Job Cards', If(IsBlank(varCard), Defaults('Callout Job Cards'), varCard), {
+                          TicketID: varTicket,
+                          Title: Coalesce(varCard.Title, Param("summary"), "Callout"),
+                          Store: txtStore.Text,
+                          Technician: User().FullName, TechnicianEmail: User().Email,
+                          LeftOffice: varPending.At, LeftOfficeLocation: varPending.Loc,
+                          JobMonth: Text(varPending.At, "yyyy-mm"),
+                          Status: {Value: "Travelling to site"}, LastStep: "left_office"
+                      })
+                  )
+              );
+              If(
+                  IsBlank(varSaved),
+                  Notify("Not saved — check your signal and tap Retry. The original time is kept.", NotificationType.Error),
+                  Set(varCard, varSaved);
+                  Set(varPending, Blank());
+                  Notify("Saved " & Text(varSaved.Modified, "hh:mm"), NotificationType.Success)
+              );
+              Set(varBusy, false)
+      - lblDurations:
+          Control: Label
+          Properties:
+            X: =16
+            Y: =464
+            Width: =Parent.Width - 32
+            Height: =80
+            Size: =13
+            Color: =RGBA(93, 102, 112, 1)
+            Text: |-
+              ="Travel out " & Coalesce(Text(varCard.TravelOutMins), "—") & " min  ·  " &
+               "On site " & Coalesce(Text(varCard.OnSiteMins), "—") & " min  ·  " &
+               "Travel back " & Coalesce(Text(varCard.TravelBackMins), "—") & " min  ·  " &
+               "Total " & Coalesce(Text(varCard.TotalMins), "—") & " min"

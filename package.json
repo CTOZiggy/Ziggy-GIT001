@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "style-dictionary build --config style-dictionary.config.js",
+    "start": "node app/server.js",
+    "test": "node --test test/*.test.js",
     "build:watch": "style-dictionary build --config style-dictionary.config.js --watch",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

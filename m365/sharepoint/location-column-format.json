@@ -1,0 +1,9 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/sp/v2/column-formatting.schema.json",
+  "elmType": "a",
+  "txtContent": "=if(@currentField == '', '', 'Map')",
+  "attributes": {
+    "href": "=if(@currentField == '', '', 'https://www.google.com/maps?q=' + @currentField)",
+    "target": "_blank"
+  }
+}

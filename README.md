@@ -1,5 +1,9 @@
 # Callout job cards for Halo PSA
 
+> **Microsoft 365 version (recommended):** see [`m365/`](m365/README.md). It runs on
+> SharePoint, Power Apps and Power Automate with nothing to host. The Node.js
+> service below is the self-hosted alternative.
+
 A small service that tracks a technician's callout in four steps and writes each
 step back to the Halo ticket.
 
